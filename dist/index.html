@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <title>Telegram contest graph</title>
+
+<link rel="stylesheet" href="/app.c328ef1a.css"></head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="tg-chart" id="chart">
+                <div data-el="tooltip" class="tg-chart-tooltip"></div>
+                <canvas data-el="main"></canvas>
+
+                <div class="tg-chart-slider" data-el="slider">
+                    <canvas></canvas>
+                    <div data-el="left" class="th-chart-slider__left">
+                        <div data-el="arrow" data-type="left" class="tg-chart-slider__arrow--left"></div>
+                    </div>
+                    <div data-el="window" data-type="window" class="th-chart-slider__window"></div>
+    
+                    <div data-el="right" class="th-chart-slider__right">
+                        <div data-el="arrow" data-type="right" class="th-chart-slider__arrow--right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.c328ef1a.js"></script>
+</body>
+</html>
