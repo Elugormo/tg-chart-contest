@@ -124,8 +124,6 @@ export function chart(root, data) {
     const yRatio = computeYRatio(VIEW_HEIGHT, max, yMin);
     const xRatio = computeXRatio(VIEW_WIDTH, columns[0].length);
 
-    const translate = translateX(data.columns[0].length, xRatio, proxy.pos[0]);
-
     const yData = columns.filter((col) => data.types[col[0]] === "line");
     const xData = columns.filter((col) => data.types[col[0]] !== "line")[0];
 
@@ -136,7 +134,7 @@ export function chart(root, data) {
       .map(toCoords(xRatio, yRatio, DPI_HEIGHT, PADDING, yMin))
       .forEach((coords, index) => {
         const color = data.colors[yData[index][0]];
-        line(ctx, coords, { color, translate });
+        line(ctx, coords, { color });
 
         for (const [x, y] of coords) {
           if (isOver(proxy.mouse, x, coords.length, DPI_WIDTH)) {
