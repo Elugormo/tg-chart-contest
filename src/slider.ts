@@ -14,7 +14,7 @@ export function sliderChart(root, data, DPI_WIDTH) {
   const DPI_HEIGHT = HEIGHT * 2;
   const WIDTH = DPI_WIDTH / 2;
   const minWidth = WIDTH * 0.05;
-  let nextFn = noop;
+  let nextFn: any = noop;
   const canvas = root.querySelector("canvas");
   const ctx = canvas.getContext("2d");
   css(canvas, {
