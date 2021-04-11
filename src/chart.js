@@ -20,6 +20,7 @@ const ROWS_COUNT = 5;
 const PADDING = 40;
 const VIEW_WIDTH = DPI_WIDTH;
 const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
+const SPEED = 300;
 
 export function chart(root, data) {
   const canvas = root.querySelector('[data-el="main"]');
@@ -31,6 +32,7 @@ export function chart(root, data) {
     DPI_WIDTH
   );
   let raf;
+  let prevMax;
   css(canvas, {
     width: WIDTH + "px",
     height: HEIGHT + "px",
@@ -78,6 +80,23 @@ export function chart(root, data) {
     ctx.clearRect(0, 0, DPI_WIDTH, DPI_HEIGHT);
   }
 
+  function getMax(yMax) {
+    const step = (yMax - prevMax) / SPEED;
+
+    if (proxy.max < yMax) {
+      proxy.max += step;
+    } else if (proxy.max > yMax) {
+      proxy.max = yMax;
+      prevMax = yMax;
+    }
+
+    return proxy.max;
+  }
+
+  function translateX(length, xRatio, left) {
+    return -1 * Math.round((left * length * xRatio) / 100);
+  }
+
   function paint() {
     clear();
     console.log("proxy.pos", proxy.pos);
@@ -95,20 +114,29 @@ export function chart(root, data) {
     const [yMin, yMax] = computeBoundaries({ columns, types: data.types });
     // const yRatio = VIEW_HEIGHT / (yMax - yMin);
     // const xRatio = VIEW_WIDTH / (columns[0].length - 2);
-    const yRatio = computeYRatio(VIEW_HEIGHT, yMax, yMin);
+
+    if (!prevMax) {
+      prevMax = yMax;
+      proxy.max = yMax;
+    }
+
+    const max = getMax(yMax);
+    const yRatio = computeYRatio(VIEW_HEIGHT, max, yMin);
     const xRatio = computeXRatio(VIEW_WIDTH, columns[0].length);
+
+    const translate = translateX(data.columns[0].length, xRatio, proxy.pos[0]);
 
     const yData = columns.filter((col) => data.types[col[0]] === "line");
     const xData = columns.filter((col) => data.types[col[0]] !== "line")[0];
 
-    yAxis(yMin, yMax);
+    yAxis(yMin, max);
     xAxis(xData, yData, xRatio);
 
     yData
       .map(toCoords(xRatio, yRatio, DPI_HEIGHT, PADDING, yMin))
       .forEach((coords, index) => {
         const color = data.colors[yData[index][0]];
-        line(ctx, coords, { color });
+        line(ctx, coords, { color, translate });
 
         for (const [x, y] of coords) {
           if (isOver(proxy.mouse, x, coords.length, DPI_WIDTH)) {

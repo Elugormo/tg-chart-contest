@@ -174,9 +174,12 @@ function isOver(mouse, x, length, dWidth) {
 }
 
 function line(ctx, coords, _ref) {
-  var color = _ref.color;
+  var color = _ref.color,
+      translate = _ref.translate;
   ctx.beginPath();
+  ctx.save();
   ctx.lineWidth = 4;
+  ctx.translate(translate, 0);
   ctx.strokeStyle = color;
 
   var _iterator = _createForOfIteratorHelper(coords),
@@ -197,6 +200,7 @@ function line(ctx, coords, _ref) {
   }
 
   ctx.stroke();
+  ctx.restore();
   ctx.closePath();
 }
 
@@ -506,6 +510,7 @@ var ROWS_COUNT = 5;
 var PADDING = 40;
 var VIEW_WIDTH = DPI_WIDTH;
 var VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
+var SPEED = 300;
 
 function chart(root, data) {
   var canvas = root.querySelector('[data-el="main"]');
@@ -513,6 +518,7 @@ function chart(root, data) {
   var tip = (0, _tooltip.tooltip)(root.querySelector('[data-el="tooltip"]'));
   var slider = (0, _slider.sliderChart)(root.querySelector('[data-el="slider"]'), data, DPI_WIDTH);
   var raf;
+  var prevMax;
   (0, _utils.css)(canvas, {
     width: WIDTH + "px",
     height: HEIGHT + "px"
@@ -559,6 +565,23 @@ function chart(root, data) {
     ctx.clearRect(0, 0, DPI_WIDTH, DPI_HEIGHT);
   }
 
+  function getMax(yMax) {
+    var step = (yMax - prevMax) / SPEED;
+
+    if (proxy.max < yMax) {
+      proxy.max += step;
+    } else if (proxy.max > yMax) {
+      proxy.max = yMax;
+      prevMax = yMax;
+    }
+
+    return proxy.max;
+  }
+
+  function translateX(length, xRatio, left) {
+    return -1 * Math.round(left * length * xRatio / 100);
+  }
+
   function paint() {
     clear();
     console.log("proxy.pos", proxy.pos);
@@ -585,20 +608,28 @@ function chart(root, data) {
     // const xRatio = VIEW_WIDTH / (columns[0].length - 2);
 
 
-    var yRatio = (0, _utils.computeYRatio)(VIEW_HEIGHT, yMax, yMin);
+    if (!prevMax) {
+      prevMax = yMax;
+      proxy.max = yMax;
+    }
+
+    var max = getMax(yMax);
+    var yRatio = (0, _utils.computeYRatio)(VIEW_HEIGHT, max, yMin);
     var xRatio = (0, _utils.computeXRatio)(VIEW_WIDTH, columns[0].length);
+    var translate = translateX(data.columns[0].length, xRatio, proxy.pos[0]);
     var yData = columns.filter(function (col) {
       return data.types[col[0]] === "line";
     });
     var xData = columns.filter(function (col) {
       return data.types[col[0]] !== "line";
     })[0];
-    yAxis(yMin, yMax);
+    yAxis(yMin, max);
     xAxis(xData, yData, xRatio);
     yData.map((0, _utils.toCoords)(xRatio, yRatio, DPI_HEIGHT, PADDING, yMin)).forEach(function (coords, index) {
       var color = data.colors[yData[index][0]];
       (0, _utils.line)(ctx, coords, {
-        color: color
+        color: color,
+        translate: translate
       });
 
       var _iterator = _createForOfIteratorHelper(coords),
